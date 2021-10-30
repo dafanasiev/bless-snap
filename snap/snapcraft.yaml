@@ -8,7 +8,7 @@ description: |
   GTK+ toolkit.
 
 
-grade: devel # must be 'stable' to release into candidate/stable channels
+grade: stable # must be 'stable' to release into candidate/stable channels or 'devel'
 confinement: strict   #use classic if all fs required OR if you need local gtk2 theming
 #confinement: classic
 

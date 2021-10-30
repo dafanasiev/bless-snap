@@ -1,0 +1,36 @@
+name: Main
+
+on:
+  schedule:
+    - cron:  '0 0 * * *'
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Grab upstream latest version tag
+        run: git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/afrantzis/bless 'v*.*.*' | tail --lines=1 | cut --delimiter='/' --fields=3 > version
+
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
+
+      - name: Patch snapcraft.yaml
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          VERSION=$(cat version)
+          sed -ie "s|version:.*|version: $VERSION|" snap/snapcraft.yaml
+
+      - name: Push changes to own repo
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          VERSION=$(cat version)
+          git config --global user.name 'Update Bot'
+          git config --global user.email 'boot@example.com'
+          git commit -am "New Version [$VERSION] Detected"
+          git tag $APP_VERSION --message "$APP_VERSION"
+          git push --atomic origin main refs/tags/$APP_VERSION
