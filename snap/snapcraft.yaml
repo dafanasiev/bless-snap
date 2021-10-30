@@ -62,6 +62,10 @@ parts:
       # fix icon and exec in desktop file
       sed -i 's|Icon=bless|Icon=\${SNAP}/opt/bless/share/icons/hicolor/48x48/apps/bless.png|' ${SNAPCRAFT_PART_INSTALL}/opt/bless/share/applications/bless.desktop
       sed -i 's|Exec=bless %F|Exec=\${SNAP}/opt/bless/bin/bless %F|' ${SNAPCRAFT_PART_INSTALL}/opt/bless/share/applications/bless.desktop
+      #
+      # fix perl5 broken symlink
+      rm -f $SNAPCRAFT_PART_INSTALL/usr/share/perl5/XML/SAX/ParserDetails.ini
+      ln -s ../../../../../etc/perl/XML/SAX/ParserDetails.ini $SNAPCRAFT_PART_INSTALL/usr/share/perl5/XML/SAX/ParserDetails.ini
 
   # This part installs the `desktop-launch` script which initialises desktop
   # features such as fonts, themes and the XDG environment. It also installs
