@@ -1,4 +1,4 @@
-name: bless
+name: bless-unofficial
 base: core20
 version: 'git-master' # just for humans
 summary: Bless Hex Editor
