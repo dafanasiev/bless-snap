@@ -1,6 +1,6 @@
 name: bless-unofficial
 base: core20
-version: 'git-master' # just for humans
+version: v0.6.3
 summary: Bless Hex Editor
 description: |
   Bless is a binary (hex) editor, a program that enables you to edit files as
