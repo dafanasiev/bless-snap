@@ -32,5 +32,5 @@ jobs:
           git config --global user.name 'Update Bot'
           git config --global user.email 'boot@example.com'
           git commit -am "New Version [$VERSION] Detected"
-          git tag $APP_VERSION --message "$APP_VERSION"
-          git push --atomic origin main refs/tags/$APP_VERSION
+          git tag $VERSION --message "$VERSION"
+          git push --atomic origin master refs/tags/$VERSION
