@@ -9,8 +9,8 @@ description: |
 
 
 grade: devel # must be 'stable' to release into candidate/stable channels
-#confinement: strict
-confinement: classic
+confinement: strict   #use classic if all fs required OR if you need local gtk2 theming
+#confinement: classic
 
 environment:
   MONO_CFG_DIR: $SNAP/etc
@@ -124,6 +124,7 @@ apps:
     environment:
       # Fallback to XWayland if running in a Wayland session.
       DISABLE_WAYLAND: 1
+      GTK_USE_PORTAL: "1"
     plugs:
       - desktop
       - desktop-legacy
@@ -131,4 +132,6 @@ apps:
       - unity7
       - x11
       - wayland
+      - home
+      - removable-media
 
