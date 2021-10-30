@@ -1,0 +1,134 @@
+name: bless
+base: core20
+version: 'git-master' # just for humans
+summary: Bless Hex Editor
+description: |
+  Bless is a binary (hex) editor, a program that enables you to edit files as
+  a sequence of bytes. It is written in C# and uses the Gtk# bindings for the 
+  GTK+ toolkit.
+
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+#confinement: strict
+confinement: classic
+
+environment:
+  MONO_CFG_DIR: $SNAP/etc
+  MONO_CONFIG: $SNAP/etc/mono/config
+  MONO_GAC_PREFIX: $SNAP/usr/lib/mono
+
+parts:
+  bless:
+    plugin: meson
+    meson-parameters:
+      - -Dprefix=/opt/bless
+      - -Dbuildtype=release
+    source-type: git
+    source: https://github.com/afrantzis/bless
+    build-packages:
+      - build-essential
+      - mono-devel
+      - libgtk2.0-cil-dev
+      - libnunit-cil-dev
+      - nunit-console
+      - xsltproc
+      - docbook-xsl
+    stage-packages:
+      - mono-runtime
+      - libmono-corlib4.5-cil
+      - libmono-posix4.0-cil
+      - libmono-system-xml4.0-cil
+      - libmono-system4.0-cil
+      - gtk-sharp2
+    after:
+      - desktop-gtk2
+    override-build: |
+      snapcraftctl build
+      #
+      # fix runner
+      echo '#!/bin/sh' > $SNAPCRAFT_PART_INSTALL/opt/bless/bin/bless
+      echo 'MONO_PATH=$SNAP/usr/lib/cli/gtk-sharp-2.0:$SNAP/usr/lib/cli/glib-sharp-2.0:$SNAP/usr/lib/cli/gtk-dotnet-2.0:$SNAP/usr/lib/cli/glade-sharp-2.0:$SNAP/usr/lib/cli/gdk-sharp-2.0:$SNAP/usr/lib/cli/atk-sharp-2.0:$SNAP/usr/lib/cli/pango-sharp-2.0 \' >> $SNAPCRAFT_PART_INSTALL/opt/bless/bin/bless
+      echo '$SNAP/usr/bin/mono "$SNAP/opt/bless/lib/bless/bless.exe" "$@"' >> $SNAPCRAFT_PART_INSTALL/opt/bless/bin/bless
+      ln -s ./share/bless $SNAPCRAFT_PART_INSTALL/opt/bless/data
+      #
+      # fix mono paths
+      sed -i 's|/usr/lib/cli/glib-sharp-2.0/||g' $SNAPCRAFT_PART_INSTALL/usr/lib/cli/glib-sharp-2.0/glib-sharp.dll.config
+      sed -i 's|/usr/lib/cli/gtk-sharp-2.0/||g' $SNAPCRAFT_PART_INSTALL/usr/lib/cli/gtk-sharp-2.0/gtk-sharp.dll.config
+      sed -i 's|/usr/lib/cli/atk-sharp-2.0/||g' $SNAPCRAFT_PART_INSTALL/usr/lib/cli/atk-sharp-2.0/atk-sharp.dll.config
+      sed -i 's|/usr/lib/cli/gdk-sharp-2.0/||g' $SNAPCRAFT_PART_INSTALL/usr/lib/cli/gdk-sharp-2.0/gdk-sharp.dll.config
+      sed -i 's|/usr/lib/cli/glade-sharp-2.0/||g' $SNAPCRAFT_PART_INSTALL/usr/lib/cli/glade-sharp-2.0/glade-sharp.dll.config
+      sed -i 's|/usr/lib/cli/pango-sharp-2.0/||g' $SNAPCRAFT_PART_INSTALL/usr/lib/cli/pango-sharp-2.0/pango-sharp.dll.config
+      #
+      # fix icon and exec in desktop file
+      sed -i 's|Icon=bless|Icon=\${SNAP}/opt/bless/share/icons/hicolor/48x48/apps/bless.png|' ${SNAPCRAFT_PART_INSTALL}/opt/bless/share/applications/bless.desktop
+      sed -i 's|Exec=bless %F|Exec=\${SNAP}/opt/bless/bin/bless %F|' ${SNAPCRAFT_PART_INSTALL}/opt/bless/share/applications/bless.desktop
+
+  # This part installs the `desktop-launch` script which initialises desktop
+  # features such as fonts, themes and the XDG environment. It also installs
+  # the GTK2 runtime libraries.
+  #
+  # It is copied straight from the snapcraft desktop helpers project. Please
+  # periodically check the source for updates and copy the changes.
+  #    https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
+  #    
+  desktop-gtk2:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: gtk
+    plugin: make
+    make-parameters: ["FLAVOR=gtk2"]
+    build-packages:
+      - build-essential
+      - libgtk2.0-dev
+    stage-packages:
+      - libxkbcommon0  # XKB_CONFIG_ROOT
+      - ttf-ubuntu-font-family
+      - dmz-cursor-theme
+      - light-themes
+      - adwaita-icon-theme
+      - gnome-themes-standard
+      - shared-mime-info
+      - libgtk2.0-0
+      - libgdk-pixbuf2.0-0
+      - libglib2.0-bin
+      - libgtk2.0-bin
+      - unity-gtk2-module
+      - locales-all
+      - libappindicator1
+      - xdg-user-dirs
+      - ibus-gtk
+      - libibus-1.0-5
+
+plugs:
+  gtk-2-engines:
+    interface: content
+    target: $SNAP/lib/gtk-2.0
+    default-provider: gtk2-common-themes
+  gtk-2-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/data-dir/sounds
+    default-provider: gtk-common-themes
+
+apps:
+  bless:
+    command: opt/bless/bin/bless
+    command-chain: [bin/desktop-launch]
+    desktop: opt/bless/share/applications/bless.desktop
+    environment:
+      # Fallback to XWayland if running in a Wayland session.
+      DISABLE_WAYLAND: 1
+    plugs:
+      - desktop
+      - desktop-legacy
+      - gsettings
+      - unity7
+      - x11
+      - wayland
+
