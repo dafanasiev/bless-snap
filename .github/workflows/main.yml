@@ -23,7 +23,7 @@ jobs:
         if: steps.git-check.outputs.modified == 'true'
         run: |
           VERSION=$(cat version)
-          sed -ie "s|version:.*|version: $VERSION|" snap/snapcraft.yaml
+          sed -i "s|version:.*|version: $VERSION|" snap/snapcraft.yaml
 
       - name: Push changes to own repo
         if: steps.git-check.outputs.modified == 'true'
