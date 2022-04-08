@@ -33,6 +33,7 @@ parts:
       - nunit-console
       - xsltproc
       - docbook-xsl
+      - itstool
     stage-packages:
       - mono-runtime
       - libmono-corlib4.5-cil
