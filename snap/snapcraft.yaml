@@ -34,6 +34,7 @@ parts:
       - xsltproc
       - docbook-xsl
       - itstool
+      - gettext
     stage-packages:
       - mono-runtime
       - libmono-corlib4.5-cil
